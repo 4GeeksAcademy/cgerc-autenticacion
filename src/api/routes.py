@@ -41,7 +41,7 @@ class User(db.Model):
                             password=data.get('password')
                             
                                 if not email or not password:
-                                        return jsonify({'msg': "Email and password are required"}), 499
+                                        return jsonify({'msg': "Email and password are required"}), 400
                                             
                                                 if User.query.filter_by(email=email).first():
                                                         return jsonify({'msg': "Email already exist"}), 400
