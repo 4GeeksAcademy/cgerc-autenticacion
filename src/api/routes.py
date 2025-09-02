@@ -2,21 +2,77 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
+from flask_jwt_extended import JWTManager, create_accesss_token, jwt_required
+from flask_sqlalchemy import SQLAlchemy
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
+import bycrypt
+import os
 
+app= Flask(_name_)
 api = Blueprint('api', __name__)
 
 # Allow CORS requests to this API
 CORS(api)
 
+#configuración de la base de datos SQLite
+app.config['SQLALCHEMY_DATABASE_URI']= 'sqlite:///database.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
+app.config['JWT_SECRET_KEY']= 'penultimo-proyecto'
+db= SQLAlchemy(app)
+jwt= JWTManager(app)
 
-@api.route('/hello', methods=['POST', 'GET'])
-def handle_hello():
+class User(db.Model):
+    id= db.Column(db.Interger, primary_key=True)
+    email= db.Column(db.String(120), unique=True, nullable=False)
+    password= db.Column(db.String(255), nullable=False)
 
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend, check the network tab on the google inspector and you will see the GET request"
-    }
+#crear db
+with app.app_context():
+    db.create_all()
 
-    return jsonify(response_body), 200
+
+
+@api.route('/signup', methods=['POST'])
+def signup():
+    data= request.get_json()
+    email=data.get('email')
+    password=data.get('password')
+
+    if not email or not password:
+        return jsonify({'msg': "Email and user are required"}), 499
+    
+    if User.query.filter_by(email=email).first():
+        return jsonify({'msg': "Email already exist"}), 400
+    
+#hashear la contraseña
+hashed_password= bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+new_user= User(email=email, password=hashed_password)
+db.session.add(new_user)
+db.session.commit()
+
+return jsonify({'msg':'User created'}), 201
+
+#endpoint inicio de sesion
+@app.route('/login', methods=['POST'])
+def login():
+    data= request.get_json()
+    email= data.get('email')
+    password= data.get('password')
+
+    user= User.query.filter_by(email=email).first()
+    if not user or not bcrypt.checkpw(password.encode('utf-8', user.password):
+        return jsonify({'msg':'Credenciales inválidas'}), 401
+    access_token=create_accesss_token(identity=user.id)
+    return jsonify({'access_token': access_token}), 200
+
+#endpoint protegida
+@app.route('/private', methods=['GET'])
+@jwt_required()
+def private():
+    return jsonify({'msg': 'Private area'}), 200
+
+    if __name__== '__main__':
+        app.run(debug=True)
+    
