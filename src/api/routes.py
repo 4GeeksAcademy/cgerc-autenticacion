@@ -2,7 +2,7 @@
 Este módulo se encarga de iniciar el servidor API, cargar la base de datos y añadir los endpoints
 """
 from flask import Flask, request, jsonify, url_for, Blueprint
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required
+from flask_jwt_extended import get_jwt_identity, create_access_token, jwt_required
 from flask_sqlalchemy import SQLAlchemy
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
@@ -18,7 +18,7 @@ CORS(api)
 # Configuración de la base de datos SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'penultimo-proyecto'
+app.config['JWT_SECRET_KEY'] = os.environ.get('FLASK_APP_KEY', 'sample key')
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
@@ -32,6 +32,20 @@ class User(db.Model):
 # Crear las tablas de la base de datos
 with app.app_context():
     db.create_all()
+
+# Create a route to authenticate your users and return JWTs
+# create_access_token() function is used to actually generate the JWT
+
+
+@api.route("/token", methods=["POST"])
+def create_token():
+    email = request.json.get("email", None)
+    password = request.json.get("password,None")
+    if email != "test" or password != "test":
+        return jsonify({"msg": "Bad email or password"}), 401
+
+    access_token = create_access_token(identity=email)
+    return jsonify(access_token=access_token)
 
 
 @api.route('/signup', methods=['POST'])
