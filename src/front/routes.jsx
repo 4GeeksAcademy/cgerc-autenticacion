@@ -9,6 +9,10 @@ import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
+import Signup from '../components/Signup.jsx';
+import Login from '../components/Login.jsx';
+import Private from '../components/Private.jsx';
+import Navbar from '../components/Navbar.jsx';
 
 export const router = createBrowserRouter(
     createRoutesFromElements(

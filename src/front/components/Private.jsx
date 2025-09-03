@@ -15,7 +15,7 @@ function Private() {
     //validar token en el frontend
     try {
         const decodedToken= jwtDecode(token);
-        const currentTime= Date.now() / 1000; //tiemp actual en segundos
+        const currentTime= Date.now() / 1000; //tiemp exp en seg
         if (decodedToken.exp <currentTime) {
             sessionStorage.removeItem('token');
             navigate('/login');

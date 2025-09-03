@@ -7,7 +7,6 @@ from flask_sqlalchemy import SQLAlchemy
 from api.models import db, User
 from api.utils import generate_sitemap, APIException
 from flask_cors import CORS
-import bcrypt
 import os
 
 app = Flask(__name__)
@@ -23,17 +22,17 @@ app.config['JWT_SECRET_KEY'] = 'penultimo-proyecto'
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 
-# Registrar el blueprint
-app.register_blueprint(api, url_prefix='/api')
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
+
 # Crear las tablas de la base de datos
 with app.app_context():
     db.create_all()
+
 
 @api.route('/signup', methods=['POST'])
 def signup():
@@ -43,10 +42,10 @@ def signup():
 
     if not email or not password:
         return jsonify({'msg': "Correo y contraseña son requeridos"}), 400
-    
+
     if User.query.filter_by(email=email).first():
         return jsonify({'msg': "El correo ya existe"}), 400
-    
+
     # Hashear la contraseña
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     new_user = User(email=email, password=hashed_password)
@@ -54,6 +53,7 @@ def signup():
     db.session.commit()
 
     return jsonify({'msg': 'Usuario creado'}), 201
+
 
 @api.route('/login', methods=['POST'])
 def login():
@@ -67,10 +67,14 @@ def login():
     access_token = create_access_token(identity=user.id)
     return jsonify({'access_token': access_token}), 200
 
+
 @api.route('/private', methods=['GET'])
 @jwt_required()
 def private():
     return jsonify({'msg': 'Área privada'}), 200
+
+
+app.register_blueprint(api, url_prefix='/api')
 
 if __name__ == '__main__':
     app.run(debug=True)
