@@ -1,11 +1,23 @@
-import { useState } from 'react';
+import React, {useContext, useState} from "react";
+import { Context } from "../store/appContext";
 import { useNavigate} from 'react-router-dom';
+import {useHistory} from 'react-router';
 import axios from 'axios';
 
 function Login() {
+    const {store, actions}= useContext(Context);
     const [email, setEmail]= useState('');
     const[password, setPassword]= useState('');
     const navigate= useNavigate();
+    const history= useHistory();
+
+    const token= sessionStorage.getItem("token");
+    console.log("This is your token", token);
+    const handleClick= () => {
+        actions.login(email, password).then(() => {
+            history.push("/")
+        })
+    };
 
     const handleSubmit= async (e) => {
         e.preventDefault();
