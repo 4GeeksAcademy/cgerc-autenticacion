@@ -14,6 +14,7 @@ CORS(app)
 # Configuración de la base de datos SQLite
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY']=os.envirot.getenv('SECRET_KEY')
 app.config['JWT_SECRET_KEY'] = os.environ.get('FLASK_APP_KEY', os.urandom(32).hex())
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
@@ -70,7 +71,7 @@ def login():
     user = User.query.filter_by(email=email).first()
     if not user or not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
         return jsonify({'msg': 'Credenciales inválidas'}), 401
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=user.email)
     return jsonify({'access_token': access_token}), 200
 
 @api.route('/private', methods=['GET'])
