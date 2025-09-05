@@ -89,6 +89,10 @@ def login():
 def private():
     return jsonify({'msg': 'Área privada'}), 200
 
+
+
+
+
 # Registrar el blueprint
 app.register_blueprint(api, url_prefix='/api')
 
